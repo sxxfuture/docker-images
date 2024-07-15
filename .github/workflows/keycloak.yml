@@ -1,0 +1,33 @@
+name: build keycloak
+
+on:
+  push:
+    branches: ["master"]
+    paths:
+      - keycloak/**
+      - .github/workflows/keycloak.yml
+
+jobs:
+  build-image:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+      attestations: write
+      id-token: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Log in to the Container registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Build and push Docker image
+        id: push
+        uses: docker/build-push-action@v6
+        with:
+          context: ./keycloak
+          push: true
+          tags: ghcr.io/${{ github.repository }}/keycloak:25.0.1-0

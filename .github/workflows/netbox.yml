@@ -15,9 +15,6 @@ env:
 jobs:
   build-and-push-image:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: ./netbox
     permissions:
       contents: read
       packages: write
@@ -41,7 +38,7 @@ jobs:
         id: push
         uses: docker/build-push-action@f2a1d5e99d037542a71f64918e516c093c6f3fc4
         with:
-          context: .
+          context: ./netbox
           push: true
           tags: ${{ env.IMAGE_TAG }}
           labels: ${{ steps.meta.outputs.labels }}

@@ -3,7 +3,9 @@ name: build netbox
 on:
   push:
     branches: ["master"]
-    paths: netbox/**
+    paths:
+      - netbox/**
+      - .github/workflows/netbox.yml
 
 env:
   REGISTRY: ghcr.io

@@ -30,4 +30,4 @@ jobs:
         with:
           context: ./netbox
           push: true
-          tags: ghcr.io/${{ github.repository }}/netbox:v3.7.8-2.8.0
+          tags: ghcr.io/${{ github.repository }}/netbox:v3.7.8-2.8.0-0

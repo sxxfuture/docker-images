@@ -1,5 +1,10 @@
 import os
 
+AUTHENTICATION_BACKENDS = (
+    'social_core.backends.keycloak.KeycloakOAuth2',
+    'django.contrib.auth.backends.ModelBackend',
+)
+
 SOCIAL_AUTH_KEYCLOAK_KEY=os.getenv('SOCIAL_AUTH_KEYCLOAK_KEY')
 SOCIAL_AUTH_KEYCLOAK_SECRET=os.getenv('SOCIAL_AUTH_KEYCLOAK_SECRET')
 SOCIAL_AUTH_KEYCLOAK_PUBLIC_KEY=os.getenv('SOCIAL_AUTH_KEYCLOAK_PUBLIC_KEY')

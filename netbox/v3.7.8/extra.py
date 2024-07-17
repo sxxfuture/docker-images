@@ -23,3 +23,9 @@ SOCIAL_AUTH_PIPELINE = (
     'social_core.pipeline.user.user_details',
     'netbox.sso_pipeline_roles.set_groups',
 )
+
+STORAGE_BACKEND = 'storages.backends.s3boto3.S3Boto3Storage'
+STORAGE_CONFIG = {
+    'AWS_S3_REGION_NAME': os.getenv('AWS_S3_REGION_NAME'),
+    'AWS_STORAGE_BUCKET_NAME': os.getenv('AWS_STORAGE_BUCKET_NAME'),
+}

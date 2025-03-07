@@ -1,4 +1,4 @@
-FROM quay.io/keycloak/keycloak:25.0.1-0 as builder
+FROM quay.io/keycloak/keycloak:26.1.3-0 as builder
 
 ENV KC_HEALTH_ENABLED=true
 ENV KC_METRICS_ENABLED=true

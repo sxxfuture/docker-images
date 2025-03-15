@@ -140,8 +140,8 @@ zh:
         must_contain_lowercase: "必须包含小写字母 (a-z)"
         must_contain_digits: "必须包含数字 (0-9)"
         must_contain_special_chars: "必须包含特殊字符 (!, $, %, ...)"
-        domain_not_allowed: "contains a domain not allowed (%{domain})"
-        too_simple: "is too simple"
+        domain_not_allowed: "包含不允许的域名 (%{domain})"
+        too_simple: "过于简单"
 
   actionview_instancetag_blank_option: 请选择
 
@@ -1002,7 +1002,7 @@ zh:
   text_account_destroy_confirmation: |-
     确定继续处理？
     您的账号一旦删除，将无法再次激活使用。
-  error_session_expired: 您的会话已过期。请重新登陆。
+  error_session_expired: 您的会话已过期。请重新登录。
   text_session_expiration_settings: "警告： 更改这些设置将会使包括你在内的当前会话失效。"
   setting_session_lifetime: 会话最大有效时间
   setting_session_timeout: 会话闲置超时
@@ -1422,15 +1422,15 @@ zh:
   text_select_apply_issue_status: 选择问题状态
   field_name_or_email_or_login: 姓名、电子邮件或登录名
   text_default_active_job_queue_changed: 仅适用于开发/测试环境的默认队列适配器已改变
-  label_option_auto_lang: auto
-  label_issue_attachment_added: Attachment added
-  field_estimated_remaining_hours: Estimated remaining time
-  field_last_activity_date: Last activity
-  setting_issue_done_ratio_interval: Done ratio options interval
-  setting_copy_attachments_on_issue_copy: Copy attachments on copy
-  field_thousands_delimiter: Thousands delimiter
-  label_involved_principals: Author / Previous assignee
+  label_option_auto_lang: 自动
+  label_issue_attachment_added: 含附件
+  field_estimated_remaining_hours: 预计剩余时间
+  field_last_activity_date: 最后活动
+  setting_issue_done_ratio_interval: 完成比例选项间隔
+  setting_copy_attachments_on_issue_copy: 复制问题同时复制附件
+  field_thousands_delimiter: 千位分隔符
+  label_involved_principals: 作者/前指派人
   label_attachment_summary:
     zero: "%{filename}"
-    one: "%{filename} and 1 file"
-    other: "%{filename} and %{count} files"
+    one: "%{filename} +1"
+    other: "%{filename} +%{count}"

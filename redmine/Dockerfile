@@ -7,9 +7,11 @@ RUN cd /usr/src/redmine/ && \
     git clone --depth=1 https://github.com/alphanodes/redmine_lightbox.git plugins/redmine_lightbox && \
     git clone --depth=1 https://github.com/redmica/redmica_s3.git plugins/redmica_s3 && \
     cp plugins/redmica_s3/config/s3.yml.example config/s3.yml && \
+    git clone --depth=1 https://github.com/happy-se-life/kanban.git plugins/kanban && \
     find plugins -type f -iname "*.md" -exec rm -rf {} + && \
     find plugins -maxdepth 2 -iname ".*" -exec rm -rf {} + && \
     find plugins -maxdepth 2 -iname "test" -exec rm -rf {} + && \
     bundle install && gem cleanup
 
-ADD zh.yml /usr/src/redmine/config/locales/zh.yml
+ADD locales/redmine.yml /usr/src/redmine/config/locales/zh.yml
+ADD locales/kanban.yml /usr/src/redmine/plugins/kanban/config/locales/zh.yml

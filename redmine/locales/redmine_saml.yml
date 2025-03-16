@@ -1,11 +1,11 @@
 zh:
-  error_saml_authenticity_error: SAML authentication error
-  error_saml_invalid_ticket: Invalid SAML ticket
-  label_onthefly_creation: Create users automatically?
-  label_replace_redmine_login: Replace Redmine login page
-  label_saml_enabled: Enable SAML authentication
-  label_saml_login_label: Login page text
-  label_saml_test_plural: Tests
-  saml_login_label: Login with SSO
-  text_full_logout_proposal: You may want to %{value} before trying an other username.
-  text_logout_from_saml: close SSO session
+  error_saml_authenticity_error: SAML认证校验错误
+  error_saml_invalid_ticket: SAML票据无效
+  label_onthefly_creation: 自动创建用户？
+  label_replace_redmine_login: 替换Redmine登录页面
+  label_saml_enabled: 启用SAML认证
+  label_saml_login_label: 登录页面显示文本
+  label_saml_test_plural: 测试
+  saml_login_label: 使用SSO登录
+  text_full_logout_proposal: 您可能需要先%{value}再尝试其他用户名
+  text_logout_from_saml: 退出SSO会话

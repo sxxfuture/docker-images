@@ -1,53 +1,53 @@
 zh:
-  kanban_menu_caption: Kanban
+  kanban_menu_caption: 看板
 
-  kanban_label_title: "'s Kanban"
-  kanban_label_unspecified: unspecified
-  kanban_label_wip_limits: WIP limits
-  kanban_label_wip_limit_exceeded: WIP limit exceeded
-  kanban_label_fields: Fields
-  kanban_label_update: Update
+  kanban_label_title: "%s的看板"
+  kanban_label_unspecified: 未指定
+  kanban_label_wip_limits: 在制品限制
+  kanban_label_wip_limit_exceeded: 超过在制品限制
+  kanban_label_fields: 字段
+  kanban_label_update: 更新
 
-  kanban_label_within_1_day: within 1day
-  kanban_label_within_3_days: within 3days
-  kanban_label_within_1_week: within 1week
-  kanban_label_within_2_weeks: within 2weeks
-  kanban_label_within_1_month: within 1month
-  kanban_label_within_2_months: within 2months
-  kanban_label_within_3_months: within 3months
+  kanban_label_within_1_day: 1天内
+  kanban_label_within_3_days: 3天内
+  kanban_label_within_1_week: 1周内
+  kanban_label_within_2_weeks: 2周内
+  kanban_label_within_1_month: 1个月内
+  kanban_label_within_2_months: 2个月内
+  kanban_label_within_3_months: 3个月内
 
-  kanban_label_recent_history_is_here: Recent history is displayed here
-  kanban_label_recent_history: Recent History
-  kanban_label_add_notes: Add Notes
+  kanban_label_recent_history_is_here: 最近历史记录显示在此处
+  kanban_label_recent_history: 最近历史
+  kanban_label_add_notes: 添加备注
 
-  kanban_label_overdue: Overdue
-  kanban_label_today: Today
-  kanban_label_tommorow: Tomorrow
-  kanban_label_thisweek: This week
-  kanban_label_nextweek: Next week
+  kanban_label_overdue: 已逾期
+  kanban_label_today: 今天
+  kanban_label_tommorow: 明天
+  kanban_label_thisweek: 本周
+  kanban_label_nextweek: 下周
 
-  kanban_label_days_left: "%{value} days left"
-  kanban_hours_abbreviation: 'h'
+  kanban_label_days_left: "剩余%{value}天"
+  kanban_hours_abbreviation: '小时'
 
-  kanban_label_card_size: Card size
-  kanban_label_card_size_small: Small
-  kanban_label_card_size_normal_days_left: Normal (diff. of due date)
-  kanban_label_card_size_normal_estimated_hours: Normal (estimated hours)
-  kanban_label_card_size_normal_spent_hours: Normal (spent hours)
+  kanban_label_card_size: 卡片尺寸
+  kanban_label_card_size_small: 小
+  kanban_label_card_size_normal_days_left: 常规（剩余天数）
+  kanban_label_card_size_normal_estimated_hours: 常规（预计小时）
+  kanban_label_card_size_normal_spent_hours: 常规（已用小时）
 
-  kanban_label_show_ancestors: Show parent task
+  kanban_label_show_ancestors: 显示父任务
 
-  button_keyboard_shortcuts: Shortcuts
+  button_keyboard_shortcuts: 快捷键
 
-  kanban_keyboard_shortcuts_help_0: Show login user only.
-  kanban_keyboard_shortcuts_help_1: Show everyone in the project.
-  kanban_keyboard_shortcuts_help_2: Set due date to unspecified.
-  kanban_keyboard_shortcuts_help_3: Set due date to overdue.
-  kanban_keyboard_shortcuts_help_4: Set due date to today.
-  kanban_keyboard_shortcuts_help_5: Set due date to this week.
-  kanban_keyboard_shortcuts_help_6: Show by normal size card with days left.
-  kanban_keyboard_shortcuts_help_7: Show by normal size card with estimated hours.
-  kanban_keyboard_shortcuts_help_8: Show by small size card.
-  kanban_keyboard_shortcuts_help_9: Select all open issues.
-  kanban_keyboard_shortcuts_help_10: Show this help.
-  kanban_keyboard_shortcuts_help_11: Show by normal size card with spent hours.
+  kanban_keyboard_shortcuts_help_0: 仅显示我的任务
+  kanban_keyboard_shortcuts_help_1: 显示所有人的任务
+  kanban_keyboard_shortcuts_help_2: 将截止日期设为未指定
+  kanban_keyboard_shortcuts_help_3: 将截止日期设为已逾期
+  kanban_keyboard_shortcuts_help_4: 将截止日期设为今天
+  kanban_keyboard_shortcuts_help_5: 将截止日期设为本周
+  kanban_keyboard_shortcuts_help_6: 显示带剩余天数的常规尺寸卡片
+  kanban_keyboard_shortcuts_help_7: 显示带预计小时的常规尺寸卡片
+  kanban_keyboard_shortcuts_help_8: 显示小尺寸卡片
+  kanban_keyboard_shortcuts_help_9: 选择所有未关闭事项
+  kanban_keyboard_shortcuts_help_10: 显示此帮助
+  kanban_keyboard_shortcuts_help_11: 显示带花费小时数的常规尺寸卡片

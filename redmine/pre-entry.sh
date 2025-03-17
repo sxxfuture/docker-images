@@ -17,4 +17,4 @@ safe_copy /config/database.yml /usr/src/redmine/config/database.yml
 safe_copy /config/s3.yml /usr/src/redmine/config/s3.yml
 safe_copy /config/initializers/saml.rb /usr/src/redmine/config/initializers/saml.rb
 
-docker-entrypoint.sh "$@"
+/docker-entrypoint.sh "$@"

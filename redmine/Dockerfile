@@ -15,3 +15,7 @@ RUN cd /usr/src/redmine/ && \
 
 ADD locales/redmine.yml /usr/src/redmine/config/locales/zh.yml
 ADD locales/kanban.yml /usr/src/redmine/plugins/kanban/config/locales/zh.yml
+
+ADD pre-entry.sh /pre-entry.sh
+
+ENTRYPOINT ["/pre-entry.sh"]

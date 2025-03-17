@@ -11,7 +11,7 @@ RUN cd /usr/src/redmine/ && \
     find plugins -type f -iname "*.md" -exec rm -rf {} + && \
     find plugins -maxdepth 2 -iname ".*" -exec rm -rf {} + && \
     find plugins -maxdepth 2 -iname "test" -exec rm -rf {} + && \
-    bundle install && gem cleanup
+    bundle install && && gem install pg && gem cleanup
 
 ADD locales/redmine.yml /usr/src/redmine/config/locales/zh.yml
 ADD locales/kanban.yml /usr/src/redmine/plugins/kanban/config/locales/zh.yml
@@ -19,3 +19,5 @@ ADD locales/kanban.yml /usr/src/redmine/plugins/kanban/config/locales/zh.yml
 ADD pre-entry.sh /pre-entry.sh
 
 ENTRYPOINT ["/pre-entry.sh"]
+
+CMD ["rails" "server" "-b" "0.0.0.0"]

@@ -14,10 +14,9 @@ safe_copy() {
 	cp "$src" "$dst"
 }
 
-safe_copy /config/configuration.yml /usr/src/redmine/config/configuration.yml
-safe_copy /config/database.yml /usr/src/redmine/config/database.yml
-safe_copy /config/s3.yml /usr/src/redmine/config/s3.yml
-safe_copy /config/initializers/saml.rb /usr/src/redmine/config/initializers/saml.rb
+for file in $(find /config -type f); do
+	safe_copy "$file" "/usr/src/redmine$file"
+done
 
 echo "Starting Redmine: /docker-entrypoint.sh" "$@"
 

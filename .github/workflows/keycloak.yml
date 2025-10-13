@@ -30,4 +30,4 @@ jobs:
         with:
           context: ./keycloak
           push: true
-          tags: ghcr.io/${{ github.repository }}/keycloak:26.3.5-0,ghcr.io/${{ github.repository }}/keycloak:26.3.5-0-${{ github.sha }}
+          tags: ghcr.io/${{ github.repository }}/keycloak:26.4.0-0,ghcr.io/${{ github.repository }}/keycloak:26.4.0-0-${{ github.sha }}

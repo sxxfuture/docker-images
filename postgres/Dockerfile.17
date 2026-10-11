@@ -1,0 +1,8 @@
+FROM postgres:17-trixie
+
+# pglayers PG 17 uses the "classic" layout: extension files live at their
+# standard PostgreSQL paths (usr/lib/postgresql/17/lib, usr/share/postgresql/17/extension).
+# The -trixie base is required because pglayers extensions are built against
+# glibc 2.38+ (Debian trixie), not bookworm's 2.36.
+COPY --from=ghcr.io/pglayers/pgx-pgvector:17 / /
+COPY --from=ghcr.io/pglayers/pgx-postgis:17 / /

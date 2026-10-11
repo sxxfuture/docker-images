@@ -1,0 +1,13 @@
+FROM postgres:18-trixie
+
+# pglayers PG 18+ uses the "isolated" layout: each extension lives in its own
+# /extensions/<name>/ namespace and is discovered via the extension_control_path
+# and dynamic_library_path GUCs. Each layer is self-contained ($ORIGIN RUNPATH,
+# per-extension-mangled sonames), so no ldconfig/LD_LIBRARY_PATH is needed.
+COPY --from=ghcr.io/pglayers/pgx-pgvector:18 / /extensions/pgvector/
+COPY --from=ghcr.io/pglayers/pgx-postgis:18 / /extensions/postgis/
+
+RUN echo "extension_control_path = '/extensions/pgvector/share:/extensions/postgis/share:\$system'" \
+    >> /usr/share/postgresql/postgresql.conf.sample && \
+    echo "dynamic_library_path = '/extensions/pgvector/lib:/extensions/postgis/lib:\$libdir'" \
+    >> /usr/share/postgresql/postgresql.conf.sample

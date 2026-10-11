@@ -37,9 +37,7 @@ jobs:
         uses: docker/build-push-action@v7
         with:
           context: ./postgres
-          file: ./postgres/Dockerfile
-          build-args: |
-            PG_MAJOR=${{ matrix.pg_major }}
+          file: ./postgres/Dockerfile.${{ matrix.pg_major }}
           push: true
           tags: |
             ghcr.io/${{ github.repository }}/postgres:${{ matrix.pg_major }}

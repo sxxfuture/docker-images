@@ -20,8 +20,11 @@ jobs:
       matrix:
         include:
           - postgres: 16
+            dockerfile: Dockerfile.16
           - postgres: 17
+            dockerfile: Dockerfile.17
           - postgres: 18
+            dockerfile: Dockerfile.18
     steps:
       - name: Checkout repository
         uses: actions/checkout@v7
@@ -36,8 +39,6 @@ jobs:
         uses: docker/build-push-action@v7
         with:
           context: ./postgres
+          file: ./postgres/${{ matrix.dockerfile }}
           push: true
-          build-args: |
-            PG_MAJOR=${{ matrix.postgres }}
-            DEBIAN_CODENAME=trixie
           tags: ghcr.io/${{ github.repository }}/postgres:${{ matrix.postgres }},ghcr.io/${{ github.repository }}/postgres:${{ matrix.postgres }}-${{ github.sha }}

@@ -1,10 +1,12 @@
 ARG PG_MAJOR=17
 ARG DEBIAN_CODENAME=trixie
 
-FROM postgres:$PG_MAJOR-$DEBIAN_CODENAME
+FROM postgres:${PG_MAJOR}-${DEBIAN_CODENAME}
 
 ADD https://github.com/pgvector/pgvector.git#v0.8.6 /tmp/pgvector
 ADD https://github.com/postgis/postgis.git#3.6.4 /tmp/postgis
+
+ARG PG_MAJOR
 
 RUN <<EORUN
 #!/bin/bash -ex
@@ -15,7 +17,7 @@ apt-mark hold locales
 apt-get install -y --no-install-recommends \
     build-essential \
     ca-certificates \
-    postgresql-server-dev-$PG_MAJOR \
+    postgresql-server-dev-${PG_MAJOR} \
     libxml2-dev \
     libgeos-dev \
     libproj-dev \
@@ -27,7 +29,9 @@ apt-get install -y --no-install-recommends \
     automake \
     libtool \
     libtool-bin \
-    pkg-config
+    pkg-config \
+    bison \
+    flex
 
 # Build and install pgvector
 cd /tmp/pgvector
@@ -55,7 +59,7 @@ rm -r /tmp/postgis
 # Cleanup
 apt-get remove -y \
     build-essential \
-    postgresql-server-dev-$PG_MAJOR \
+    postgresql-server-dev-${PG_MAJOR} \
     libxml2-dev \
     libgeos-dev \
     libproj-dev \
@@ -67,7 +71,9 @@ apt-get remove -y \
     automake \
     libtool \
     libtool-bin \
-    pkg-config
+    pkg-config \
+    bison \
+    flex
 apt-get autoremove -y
 apt-mark unhold locales
 rm -rf /var/lib/apt/lists/*

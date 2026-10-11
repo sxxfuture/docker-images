@@ -15,6 +15,10 @@ jobs:
       packages: write
       attestations: write
       id-token: write
+    strategy:
+      fail-fast: false
+      matrix:
+        pg_major: [17, 18]
     steps:
       - name: Checkout repository
         uses: actions/checkout@v7
@@ -29,13 +33,17 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
       
-      - name: Build and push all PostgreSQL images
-        uses: docker/bake-action@v6
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v7
         with:
-          workdir: ./postgres
-          files: ./postgres/docker-bake.hcl
-          targets: default
+          context: ./postgres
+          file: ./postgres/Dockerfile
+          build-args: |
+            PG_MAJOR=${{ matrix.pg_major }}
           push: true
-          set: |
-            *.cache-from=type=gha,scope=postgres-${{ matrix.postgres }}
-            *.cache-to=type=gha,mode=max,scope=postgres-${{ matrix.postgres }}
+          tags: |
+            ghcr.io/${{ github.repository }}/postgres:${{ matrix.pg_major }}
+            ghcr.io/${{ github.repository }}/postgres:${{ matrix.pg_major }}-${{ github.sha }}
+          cache-from: type=gha,scope=postgres-${{ matrix.pg_major }}
+          cache-to: type=gha,mode=max,scope=postgres-${{ matrix.pg_major }}
+          platforms: linux/amd64

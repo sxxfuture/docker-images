@@ -26,6 +26,7 @@ apt-get install -y --no-install-recommends \
     autoconf \
     automake \
     libtool \
+    libtool-bin \
     pkg-config
 
 # Build and install pgvector
@@ -65,6 +66,7 @@ apt-get remove -y \
     autoconf \
     automake \
     libtool \
+    libtool-bin \
     pkg-config
 apt-get autoremove -y
 apt-mark unhold locales

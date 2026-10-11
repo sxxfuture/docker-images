@@ -5,7 +5,6 @@ FROM postgres:$PG_MAJOR-$DEBIAN_CODENAME
 
 ADD https://github.com/pgvector/pgvector.git#v0.8.6 /tmp/pgvector
 ADD https://github.com/postgis/postgis.git#3.6.4 /tmp/postgis
-ADD https://github.com/PostgREST/postgrest/releases/download/v12.2.3/postgrest-v12.2.3-linux-static-x64.tar.xz /tmp/postgrest.tar.xz
 
 RUN <<EORUN
 #!/bin/bash -ex
@@ -24,7 +23,10 @@ apt-get install -y --no-install-recommends \
     libjson-c-dev \
     libprotobuf-c-dev \
     protobuf-c-compiler \
-    xz-utils
+    autoconf \
+    automake \
+    libtool \
+    pkg-config
 
 # Build and install pgvector
 cd /tmp/pgvector
@@ -49,13 +51,6 @@ make -j$(nproc)
 make install
 rm -r /tmp/postgis
 
-# Install PostgREST
-cd /tmp
-tar xJf postgrest.tar.xz
-mv postgrest /usr/local/bin/
-chmod +x /usr/local/bin/postgrest
-rm postgrest.tar.xz
-
 # Cleanup
 apt-get remove -y \
     build-essential \
@@ -67,7 +62,10 @@ apt-get remove -y \
     libjson-c-dev \
     libprotobuf-c-dev \
     protobuf-c-compiler \
-    xz-utils
+    autoconf \
+    automake \
+    libtool \
+    pkg-config
 apt-get autoremove -y
 apt-mark unhold locales
 rm -rf /var/lib/apt/lists/*

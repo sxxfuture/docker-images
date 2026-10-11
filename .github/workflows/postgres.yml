@@ -21,6 +21,7 @@ jobs:
         include:
           - postgres: 16
           - postgres: 17
+          - postgres: 18
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4

@@ -3,23 +3,71 @@ ARG DEBIAN_CODENAME=trixie
 
 FROM postgres:$PG_MAJOR-$DEBIAN_CODENAME
 
-ADD https://github.com/pgvector/pgvector.git#v0.8.0 /tmp/pgvector
+ADD https://github.com/pgvector/pgvector.git#v0.8.6 /tmp/pgvector
+ADD https://github.com/postgis/postgis.git#3.6.4 /tmp/postgis
+ADD https://github.com/PostgREST/postgrest/releases/download/v12.2.3/postgrest-v12.2.3-linux-static-x64.tar.xz /tmp/postgrest.tar.xz
 
 RUN <<EORUN
 #!/bin/bash -ex
 apt-get update
 apt-mark hold locales
-apt-get install -y --no-install-recommends build-essential postgresql-server-dev-$PG_MAJOR
 
+# Install build dependencies
+apt-get install -y --no-install-recommends \
+    build-essential \
+    ca-certificates \
+    postgresql-server-dev-$PG_MAJOR \
+    libxml2-dev \
+    libgeos-dev \
+    libproj-dev \
+    libgdal-dev \
+    libjson-c-dev \
+    libprotobuf-c-dev \
+    protobuf-c-compiler \
+    xz-utils
+
+# Build and install pgvector
 cd /tmp/pgvector
 make clean
 make OPTFLAGS=""
 make install
-mkdir /usr/share/doc/pgvector
+mkdir -p /usr/share/doc/pgvector
 cp LICENSE README.md /usr/share/doc/pgvector
 rm -r /tmp/pgvector
 
-apt-get remove -y build-essential postgresql-server-dev-$PG_MAJOR
+# Build and install PostGIS
+cd /tmp/postgis
+./autogen.sh
+./configure \
+    --with-pgconfig=/usr/bin/pg_config \
+    --with-geosconfig=/usr/bin/geos-config \
+    --with-projdir=/usr \
+    --with-gdalconfig=/usr/bin/gdal-config \
+    --with-jsondir=/usr \
+    --with-protobufdir=/usr
+make -j$(nproc)
+make install
+rm -r /tmp/postgis
+
+# Install PostgREST
+cd /tmp
+tar xJf postgrest.tar.xz
+mv postgrest /usr/local/bin/
+chmod +x /usr/local/bin/postgrest
+rm postgrest.tar.xz
+
+# Cleanup
+apt-get remove -y \
+    build-essential \
+    postgresql-server-dev-$PG_MAJOR \
+    libxml2-dev \
+    libgeos-dev \
+    libproj-dev \
+    libgdal-dev \
+    libjson-c-dev \
+    libprotobuf-c-dev \
+    protobuf-c-compiler \
+    xz-utils
 apt-get autoremove -y
 apt-mark unhold locales
 rm -rf /var/lib/apt/lists/*

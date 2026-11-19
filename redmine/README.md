@@ -31,6 +31,14 @@ config files must not be mounted into the container.
 | `REDMINE_OIDC_AUTO_REGISTER` | `false` | `false` disables OIDC self-registration. `true` automatically activates unknown users. Existing local passwords remain usable. |
 | `REDMINE_PLUGINS_MIGRATE` | empty | Set to any non-empty value to run Redmine plugin migrations during container startup. Required once after upgrading the image or adding the OIDC plugin. |
 
+## Health check
+
+`GET /healthz` returns `200` with the plain-text body `OK`. The endpoint is a
+Rack middleware that runs before the Rails router, so it needs no database
+connection, does not render a page, bypasses authentication, and does not write
+request log lines. Use it for container startup and readiness probes; do not
+probe `/login`.
+
 ## OIDC
 
 Register the Redmine callback URL in Keycloak:

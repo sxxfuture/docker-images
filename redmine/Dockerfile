@@ -69,6 +69,7 @@ COPY locales/kanban.yml /usr/src/redmine/plugins/kanban/config/locales/zh.yml
 
 ADD pre-entry.sh /pre-entry.sh
 COPY redmine_oidc.rb /usr/src/redmine/config/initializers/40-redmine_oidc.rb
+COPY health_endpoint.rb /usr/src/redmine/config/initializers/10-health_endpoint.rb
 
 ENTRYPOINT ["/pre-entry.sh"]
 

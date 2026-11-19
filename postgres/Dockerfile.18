@@ -1,13 +1,124 @@
-FROM postgres:18-trixie
+# PostgreSQL 18 with pgvector and PostGIS, built on the Pig CLI base image.
+#
+# The base image (Dockerfile.pig, tag postgres:pig by default) provides the
+# `pig` CLI only.  PostgreSQL, PGDG and the extensions are installed here from
+# the PGDG + Pigsty repositories so the result uses the classic PostgreSQL
+# layout (standard lib/extension paths, no extension_control_path overrides).
+#
+# The official image is used as a source for /usr/local/bin only, so the
+# entrypoint, ensure/enforce helper scripts and gosu stay byte-for-byte
+# identical to postgres:18-trixie.
+ARG PIG_IMAGE=postgres:pig
+FROM postgres:18-trixie AS official
+FROM ${PIG_IMAGE}
 
-# pglayers PG 18+ uses the "isolated" layout: each extension lives in its own
-# /extensions/<name>/ namespace and is discovered via the extension_control_path
-# and dynamic_library_path GUCs. Each layer is self-contained ($ORIGIN RUNPATH,
-# per-extension-mangled sonames), so no ldconfig/LD_LIBRARY_PATH is needed.
-COPY --from=ghcr.io/pglayers/pgx-pgvector:18 / /extensions/pgvector/
-COPY --from=ghcr.io/pglayers/pgx-postgis:18 / /extensions/postgis/
+ARG DEBIAN_FRONTEND=noninteractive
 
-RUN echo "extension_control_path = '/extensions/pgvector/share:/extensions/postgis/share:\$system'" \
-    >> /usr/share/postgresql/postgresql.conf.sample && \
-    echo "dynamic_library_path = '/extensions/pgvector/lib:/extensions/postgis/lib:\$libdir'" \
-    >> /usr/share/postgresql/postgresql.conf.sample
+ENV PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/lib/postgresql/18/bin \
+    LANG=en_US.utf8 \
+    GOSU_VERSION=1.20 \
+    PG_MAJOR=18 \
+    PGDATA=/var/lib/postgresql/18/docker
+
+# Same postgres UID/GID and runtime directories as the official image.
+RUN <<EOF
+set -eux
+groupadd -r postgres --gid=999
+useradd -r -g postgres --uid=999 --home-dir=/var/lib/postgresql --shell=/bin/bash postgres
+install --verbose --directory --owner postgres --group postgres --mode 1777 /var/lib/postgresql
+install --verbose --directory --owner postgres --group postgres --mode 3777 /run/postgresql
+mkdir -p /usr/local/lib/tmpfiles.d
+printf '%s\n' \
+    'd /var/lib/postgresql 1777 postgres postgres' \
+    'd /run/postgresql 3777 postgres postgres' \
+    > /usr/local/lib/tmpfiles.d/postgresql-common.conf
+EOF
+
+# Runtime dependencies matching the official image.  The entrypoint and gosu
+# binaries come from the official stage below, so wget/gnupg are not needed.
+RUN <<EOF
+set -eux
+if [ -f /etc/dpkg/dpkg.cfg.d/docker ]; then
+    grep -q '/usr/share/locale' /etc/dpkg/dpkg.cfg.d/docker
+    sed -ri '/\/usr\/share\/locale/d' /etc/dpkg/dpkg.cfg.d/docker
+    ! grep -q '/usr/share/locale' /etc/dpkg/dpkg.cfg.d/docker
+fi
+apt-get update
+apt-get install -y --no-install-recommends locales libnss-wrapper less xz-utils zstd
+rm -rf /var/lib/apt/lists/*
+echo 'en_US.UTF-8 UTF-8' >> /etc/locale.gen
+locale-gen
+locale -a | grep 'en_US.utf8'
+EOF
+
+# Disable apt recommends for the package installs below, including the ones
+# performed by `pig install`.
+RUN <<EOF
+set -eux
+printf '%s\n' \
+    'APT::Install-Recommends "false";' \
+    'APT::Install-Suggests "false";' \
+    'Dpkg::Options { "--force-confold"; };' \
+    > /etc/apt/apt.conf.d/99no-install-recommends
+EOF
+
+# Install PostgreSQL 18, pgvector and PostGIS.  postgresql-common is installed
+# from Debian first so its bundled PGDG signing key can be used, and
+# create_main_cluster is disabled before any server package's postinst runs.
+# Pig writes the PGDG source as "trusted=yes"; rewrite it to verify signatures
+# with the key from postgresql-common before the explicit apt update.  Debian's
+# postgresql-common pulls in postgresql-common-dev and its build tooling, which
+# is purged after installation.
+RUN <<EOF
+set -eux
+apt-get update
+apt-get install -y --no-install-recommends postgresql-common
+sed -ri 's/#(create_main_cluster) .*$/\1 = false/' /etc/postgresql-common/createcluster.conf
+install -D -m 0644 /usr/share/postgresql-common/pgdg/apt.postgresql.org.asc \
+    /usr/local/share/keyrings/postgres.gpg.asc
+pig repo add pgsql --region=default
+sed -ri 's#^deb \[[^]]*\] (http://apt\.postgresql\.org/pub/repos/apt/)#deb [signed-by=/usr/local/share/keyrings/postgres.gpg.asc] \1#' \
+    /etc/apt/sources.list.d/pgsql.list
+! grep -Eq '^deb .*apt\.postgresql\.org.*trusted=yes' /etc/apt/sources.list.d/pgsql.list
+grep -F 'signed-by=/usr/local/share/keyrings/postgres.gpg.asc' /etc/apt/sources.list.d/pgsql.list
+apt-get update
+apt-get install -y --no-install-recommends postgresql-common
+sed -ri 's/#(create_main_cluster) .*$/\1 = false/' /etc/postgresql-common/createcluster.conf
+pig install -v 18 pg18 vector postgis -y
+if apt-cache show "postgresql-$PG_MAJOR-jit" > /dev/null 2>&1; then
+    apt-get install -y --no-install-recommends "postgresql-$PG_MAJOR-jit"
+fi
+apt-get purge -y --auto-remove postgresql-common-dev
+test -z "$(pg_lsclusters --no-header)"
+test -f /usr/share/postgresql/18/extension/vector.control
+test -f /usr/share/postgresql/18/extension/postgis.control
+postgres --version
+rm -rf /var/lib/apt/lists/*
+EOF
+
+# Official entrypoint, ensure/enforce helpers and gosu, copied verbatim.
+COPY --from=official /usr/local/bin/ /usr/local/bin/
+
+# Official sample config: listen on all addresses.
+RUN <<EOF
+set -eux
+dpkg-divert --add --rename --divert "/usr/share/postgresql/postgresql.conf.sample.dpkg" "/usr/share/postgresql/$PG_MAJOR/postgresql.conf.sample"
+cp -v /usr/share/postgresql/postgresql.conf.sample.dpkg /usr/share/postgresql/postgresql.conf.sample
+ln -sv ../postgresql.conf.sample "/usr/share/postgresql/$PG_MAJOR/"
+sed -ri "s!^#?(listen_addresses)\s*=\s*\S+.*!\1 = '*'!" /usr/share/postgresql/postgresql.conf.sample
+grep -F "listen_addresses = '*'" /usr/share/postgresql/postgresql.conf.sample
+EOF
+
+# PG 18 PGDATA (/var/lib/postgresql/18/docker) is intentionally not created;
+# the entrypoint takes care of it, matching the official image.
+RUN <<EOF
+set -eux
+mkdir -p /docker-entrypoint-initdb.d
+EOF
+
+VOLUME /var/lib/postgresql
+
+STOPSIGNAL SIGINT
+EXPOSE 5432
+ENTRYPOINT ["docker-entrypoint.sh"]
+CMD ["postgres"]

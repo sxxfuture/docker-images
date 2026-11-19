@@ -31,4 +31,4 @@ jobs:
         with:
           context: ./redmine
           push: true
-          tags: ghcr.io/${{ github.repository }}/redmine:6.0.4,ghcr.io/${{ github.repository }}/redmine:6.0.4-${{ github.sha }}
+          tags: ghcr.io/${{ github.repository }}/redmine:7.0.3,ghcr.io/${{ github.repository }}/redmine:7.0.3-${{ github.sha }}

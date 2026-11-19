@@ -1,7 +1,7 @@
 zh:
   kanban_menu_caption: 看板
 
-  kanban_label_title: "%s的看板"
+  kanban_label_title: "的看板"
   kanban_label_unspecified: 未指定
   kanban_label_wip_limits: 在制品限制
   kanban_label_wip_limit_exceeded: 超过在制品限制
@@ -51,3 +51,9 @@ zh:
   kanban_keyboard_shortcuts_help_9: 选择所有未关闭事项
   kanban_keyboard_shortcuts_help_10: 显示此帮助
   kanban_keyboard_shortcuts_help_11: 显示带花费小时数的常规尺寸卡片
+
+  # MyPage Widget
+  kanban_widget: 看板
+
+  # Settings
+  label_hide_done_issues: 隐藏已完成问题

@@ -20,8 +20,7 @@ clone_plugin() {
 }
 
 clone_plugin additionals https://github.com/alphanodes/additionals.git 5f5ff955dcff00e5fef47c7609f9e0d4fb038178
-clone_plugin redmine_saml https://github.com/alphanodes/redmine_saml.git fe29e949e5b69ce692f89647ddd54d7aa4555121
-gosu redmine cp plugins/redmine_saml/contrib/sample_saml_initializers.rb config/initializers/saml.rb
+clone_plugin redmine_oauth https://github.com/kontron/redmine_oauth.git 73518235aaba9da04571160cfb45c0b3ac902ce3
 clone_plugin redmine_lightbox https://github.com/alphanodes/redmine_lightbox.git 1d634688ff78a22446e4cf9ae1d99def3ebcf839
 clone_plugin redmica_s3 https://github.com/redmica/redmica_s3.git 41a81d9ddd17ac2c0f415ddadd73d94567947a30
 # Redmine 7 removed AvatarsController; skip its S3 avatar monkey patch to keep the plugin loadable
@@ -67,9 +66,9 @@ EORUN
 
 COPY locales/redmine.yml /usr/src/redmine/config/locales/zh.yml
 COPY locales/kanban.yml /usr/src/redmine/plugins/kanban/config/locales/zh.yml
-COPY locales/redmine_saml.yml /usr/src/redmine/plugins/redmine_saml/config/locales/zh.yml
 
 ADD pre-entry.sh /pre-entry.sh
+COPY redmine_oidc.rb /usr/src/redmine/config/initializers/40-redmine_oidc.rb
 
 ENTRYPOINT ["/pre-entry.sh"]
 

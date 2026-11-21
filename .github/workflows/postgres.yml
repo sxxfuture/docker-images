@@ -107,11 +107,22 @@ jobs:
           image="ghcr.io/${{ github.repository }}/postgres:${{ matrix.pg_major }}-core"
           docker run -d --name pg-core-${{ matrix.pg_major }} \
             -e POSTGRES_HOST_AUTH_METHOD=trust "$image"
+          ready=0
           for _ in $(seq 1 60); do
-            docker exec pg-core-${{ matrix.pg_major }} pg_isready -h 127.0.0.1 -U postgres && break
+            if docker logs pg-core-${{ matrix.pg_major }} 2>&1 \
+                | grep -F 'PostgreSQL init process complete; ready for start up.' > /dev/null \
+              && docker exec pg-core-${{ matrix.pg_major }} pg_isready -h 127.0.0.1 -U postgres; then
+              ready=1
+              break
+            fi
             sleep 1
           done
-          docker exec pg-core-${{ matrix.pg_major }} postgres --version | grep "PostgreSQL ${{ matrix.pg_major }}"
+          if [ "$ready" -ne 1 ]; then
+            echo "core image did not become ready within 60s"
+            docker logs pg-core-${{ matrix.pg_major }}
+            exit 1
+          fi
+          docker exec pg-core-${{ matrix.pg_major }} postgres --version | grep "PostgreSQL) ${{ matrix.pg_major }}"
           actual_pgdata=$(docker exec pg-core-${{ matrix.pg_major }} \
             psql -h 127.0.0.1 -U postgres -d postgres -Atc 'show data_directory')
           test "$actual_pgdata" = "${{ matrix.pgdata }}"

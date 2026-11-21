@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+pem::test() {
+    local ext="$1"
+    if [[ -f "/test/${ext}.sh" ]]; then
+        bash "/test/${ext}.sh"
+    else
+        psql -v ON_ERROR_STOP=1 -h 127.0.0.1 -U postgres -d postgres -f "/test/${ext}.sql"
+    fi
+}
+
+pem::test::init() {
+    docker-entrypoint.sh postgres \
+        -c shared_preload_libraries=vchord,pg_cron,vectorize,pg_search,pg_tokenizer \
+        -c cron.database_name=postgres \
+        -c vectorize.database_name=postgres &
+    PG_TEST_PID=$!
+    trap 'kill "$PG_TEST_PID" 2>/dev/null || true; wait "$PG_TEST_PID" 2>/dev/null || true' EXIT
+
+    until pg_isready -h 127.0.0.1 -U postgres -d postgres; do
+        sleep 1
+    done
+}

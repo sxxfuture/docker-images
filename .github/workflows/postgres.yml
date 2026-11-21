@@ -1,0 +1,187 @@
+name: build postgres
+
+on:
+  push:
+    branches: ["postgres", "master"]
+    paths:
+      - Dockerfile
+      - Dockerfile.ext
+      - Dockerfile.builder
+      - pem/**
+      - test/**
+      - .github/workflows/postgres.yml
+  pull_request:
+    paths:
+      - Dockerfile
+      - Dockerfile.ext
+      - Dockerfile.builder
+      - pem/**
+      - test/**
+      - .github/workflows/postgres.yml
+  workflow_dispatch:
+
+jobs:
+  builder:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v4
+
+      - name: Log in to the Container registry
+        uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build builder image
+        uses: docker/build-push-action@v7
+        with:
+          context: .
+          file: ./Dockerfile.builder
+          load: true
+          push: false
+          tags: ghcr.io/${{ github.repository }}/postgres-builder:latest
+          cache-from: type=gha,scope=postgres-builder
+          cache-to: type=gha,mode=max,scope=postgres-builder
+          platforms: linux/amd64
+
+      - name: Test builder image
+        run: docker run --rm ghcr.io/${{ github.repository }}/postgres-builder:latest test -f /pem/sourceme
+
+      - name: Push builder image
+        if: github.event_name != 'pull_request'
+        run: docker push ghcr.io/${{ github.repository }}/postgres-builder:latest
+
+  core:
+    needs: builder
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - pg_major: 17
+            pgdata: /var/lib/postgresql/data
+          - pg_major: 18
+            pgdata: /var/lib/postgresql/18/docker
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v4
+
+      - name: Log in to the Container registry
+        uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build core image
+        uses: docker/build-push-action@v7
+        with:
+          context: .
+          file: ./Dockerfile
+          load: true
+          push: false
+          build-args: |
+            PG_VERSION=${{ matrix.pg_major }}
+            PGDATA=${{ matrix.pgdata }}
+          tags: ghcr.io/${{ github.repository }}/postgres:${{ matrix.pg_major }}-core
+          cache-from: type=gha,scope=postgres-${{ matrix.pg_major }}-core
+          cache-to: type=gha,mode=max,scope=postgres-${{ matrix.pg_major }}-core
+          platforms: linux/amd64
+
+      - name: Test core image
+        run: |
+          image="ghcr.io/${{ github.repository }}/postgres:${{ matrix.pg_major }}-core"
+          docker run -d --name pg-core-${{ matrix.pg_major }} \
+            -e POSTGRES_HOST_AUTH_METHOD=trust "$image"
+          for _ in $(seq 1 60); do
+            docker exec pg-core-${{ matrix.pg_major }} pg_isready -h 127.0.0.1 -U postgres && break
+            sleep 1
+          done
+          docker exec pg-core-${{ matrix.pg_major }} postgres --version | grep "PostgreSQL ${{ matrix.pg_major }}"
+          actual_pgdata=$(docker exec pg-core-${{ matrix.pg_major }} \
+            psql -h 127.0.0.1 -U postgres -d postgres -Atc 'show data_directory')
+          test "$actual_pgdata" = "${{ matrix.pgdata }}"
+          if docker exec pg-core-${{ matrix.pg_major }} \
+            psql -h 127.0.0.1 -U postgres -d postgres -c 'CREATE EXTENSION vector'; then
+            echo "core image unexpectedly ships pgvector"
+            exit 1
+          fi
+
+      - name: Push core image
+        if: github.event_name != 'pull_request'
+        run: docker push ghcr.io/${{ github.repository }}/postgres:${{ matrix.pg_major }}-core
+
+  ext:
+    needs: builder
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - pg_major: 17
+            pgdata: /var/lib/postgresql/data
+          - pg_major: 18
+            pgdata: /var/lib/postgresql/18/docker
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v4
+
+      - name: Log in to the Container registry
+        uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build ext image
+        uses: docker/build-push-action@v7
+        with:
+          context: .
+          file: ./Dockerfile.ext
+          load: true
+          push: false
+          build-args: |
+            PG_VERSION=${{ matrix.pg_major }}
+            PGDATA=${{ matrix.pgdata }}
+          tags: ghcr.io/${{ github.repository }}/postgres:${{ matrix.pg_major }}
+          cache-from: type=gha,scope=postgres-${{ matrix.pg_major }}-ext
+          cache-to: type=gha,mode=max,scope=postgres-${{ matrix.pg_major }}-ext
+          platforms: linux/amd64
+
+      - name: Test ext image
+        run: |
+          image="ghcr.io/${{ github.repository }}/postgres:${{ matrix.pg_major }}"
+          docker run -d --name pg-ext-${{ matrix.pg_major }} \
+            --entrypoint bash \
+            -e POSTGRES_HOST_AUTH_METHOD=trust \
+            -v "$GITHUB_WORKSPACE/test:/test:ro" \
+            "$image" \
+            -c 'source /test/sourceme && pem::test::init && for ext in pgvector postgis vchord pgvectorscale pg_cron pg_vectorize hashtypes pg_lease pg_search pg_tokenizer pgmq pg_uuidv7; do pem::test "$ext"; done'
+          code=$(docker wait pg-ext-${{ matrix.pg_major }})
+          docker logs pg-ext-${{ matrix.pg_major }}
+          docker rm -f pg-ext-${{ matrix.pg_major }} > /dev/null || true
+          exit "$code"
+
+      - name: Push ext image
+        if: github.event_name != 'pull_request'
+        run: docker push ghcr.io/${{ github.repository }}/postgres:${{ matrix.pg_major }}

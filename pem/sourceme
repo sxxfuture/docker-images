@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+
+for file in $(find /pem -type f -name '*.sh' | sort); do
+    source "$file"
+done

@@ -1,1 +1,0 @@
-PLUGINS = ["netbox_dns"]

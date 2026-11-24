@@ -1,0 +1,7 @@
+.git/
+.github/
+.vscode/
+.idea/
+**/__pycache__/
+*.md
+.env
